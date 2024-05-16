@@ -1,3 +1,0 @@
-[submodule "lattice/lib/lattice"]
-	path = lattice/lib/lattice
-	url = https://github.com/MKrbm/lattice.git
