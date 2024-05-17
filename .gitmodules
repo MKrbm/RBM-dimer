@@ -1,3 +1,6 @@
 [submodule "lattice"]
 	path = lattice
 	url = https://github.com/MKrbm/lattice.git
+[submodule "spinlattice/lattice"]
+	path = spinlattice/lattice
+	url = git@github.com:MKrbm/lattice.git
