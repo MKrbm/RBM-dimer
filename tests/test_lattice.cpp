@@ -1,34 +1,42 @@
 #include <gtest/gtest.h>
+#include <graph.hpp>  // Include the header where create_graph is declared
 #include <fstream>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-#include <lattice/basis.hpp>
-#include <lattice/graph_xml.hpp>
+#include "TestLatticesPath.hpp"
 
 TEST(TriangularLatticeTest, BasisAndUnitCell) {
-    std::ifstream is("test/triangular_lattice.xml");
-    ASSERT_TRUE(is.is_open()) << "Error opening file triangular_lattice.xml";
+    std::string file = TEST_LATTICES_FILE_PATH;
+    std::string lattice_name = "triangular lattice";
+    std::string cell_name = "simple2d";
 
-    boost::property_tree::ptree pt;
-    boost::property_tree::read_xml(is, pt);
+    // Check if the file exists
+    std::ifstream test_file(file);
+    std::string comment = "File does not exist: " + file;
+    comment = comment +  "\nCurrent directory: " + std::filesystem::current_path().string();
+    ASSERT_TRUE(test_file.good()) << comment;
+    test_file.close();
+    try {
+        std::vector<size_t> size = {2, 2};  // Assuming a 2D lattice for triangular
+        lattice::boundary_t boundary = lattice::boundary_t::periodic;  // Example boundary condition
 
-    std::string basis_name = "triangular lattice";
-    std::string cell_name = "triangular";
+        // Create the graph using the function from graph.hpp
+        auto [bonds, coordinates] = create_graph(file, lattice_name, cell_name, size, boundary);
 
-    lattice::basis bs;
-    read_xml(pt, basis_name, bs);
+        for (auto& bond : bonds){
+            ASSERT_EQ(bond.bond_type, 0);
+            ASSERT_EQ(bond.bonds.size(), 2);
+        }
 
-    lattice::unitcell cell;
-    read_xml(pt, cell_name, cell);
+        for (const auto& coord_vec : coordinates) {
+            ASSERT_EQ(coord_vec.size(), 2);
+        }
 
-    // Example assertions to test the behavior
-    EXPECT_EQ(cell.dimension(), 2);
-    // EXPECT_EQ(bs.vectors().size(), 2);
-    // EXPECT_EQ(bs.vectors()[0], lattice::vector{1, 0});
-    // EXPECT_EQ(bs.vectors()[1], lattice::vector{0.5, 0.8660254037844386});
-}
+        std::cout << bonds << std::endl;
+        std::cout << coordinates << std::endl;
 
-int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+        ASSERT_NEAR(coordinates[2][0], 0.5, 1e-6);
+        ASSERT_NEAR(coordinates[2][1], std::sqrt(3) / 2, 1e-6);
+
+    } catch (const std::exception& e) {
+        FAIL() << "Exception during test: " << e.what();
+    }
 }

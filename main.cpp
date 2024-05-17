@@ -1,31 +1,23 @@
 #include <iostream>
 #include <vector>
-#include <test.hpp>
-#include <lattice/basis.hpp>
-#include <lattice/graph_xml.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
+#include <graph.hpp>
 
 int main() {
-    std::ifstream is("../lattices.xml");
-    if (!is) {
-        std::cerr << "Error opening file lattices.xml" << std::endl;
+    try {
+        std::string file = "../lattices.xml";
+        std::string lattice_name = "chain lattice";
+        std::string cell_name = "simple1d";
+        std::vector<int> size = {10};  // Example size, adjust as needed
+        lattice::boundary_t boundary = lattice::boundary_t::periodic;  // Example boundary condition
+
+        // Create the graph using the function from graph.hpp
+        // lattice::graph lat = create_graph(file, lattice_name, cell_name, size, boundary);
+
+        // std::cout << "Graph created with dimension: " << lat.dimension() << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Exception: " << e.what() << std::endl;
         return 1;
     }
-
-    boost::property_tree::ptree pt;
-    boost::property_tree::read_xml(is, pt);
-
-    std::string basis_name = "chain lattice";
-    std::string cell_name = "simple1d";
-
-    lattice::basis bs;
-    read_xml(pt, basis_name, bs);
-
-    lattice::unitcell cell;
-    read_xml(pt, cell_name, cell);
-
-    std::cout << cell.dimension() << std::endl;
 
     return 0;
 }
