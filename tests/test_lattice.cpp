@@ -1,17 +1,20 @@
 #include <gtest/gtest.h>
-#include <graph.hpp>  // Include the header where create_graph is declared
+#include <graph.hpp> // Include the header where create_graph is declared
 #include <fstream>
-#include "TestLatticesPath.hpp"
+#include <filesystem>
+#include "LatticesPath.hpp"
 
-void check_bonds(const std::vector<lattice::bond_t>& bonds, 
-                 const std::vector<std::vector<size_t>>& expected_bonds, 
-                 const std::vector<int>& bond_types) {
+void check_bonds(const std::vector<lattice::bond_t> &bonds,
+                 const std::vector<std::vector<size_t>> &expected_bonds,
+                 const std::vector<int> &bond_types)
+{
     std::vector<bool> found_bonds(expected_bonds.size(), false);
 
     ASSERT_EQ(bonds.size(), expected_bonds.size()) << "Number of bonds is not as expected";
     ASSERT_EQ(bond_types.size(), expected_bonds.size()) << "Number of bond types is not as expected";
 
-    for (size_t i = 0; i < bonds.size(); ++i) {
+    for (size_t i = 0; i < bonds.size(); ++i)
+    {
         auto bond = bonds[i].bonds;
         auto it = std::find(expected_bonds.begin(), expected_bonds.end(), bond);
         ASSERT_NE(it, expected_bonds.end()) << "Bond not found in expected bonds: {" << bond[0] << ", " << bond[1] << "}";
@@ -20,35 +23,40 @@ void check_bonds(const std::vector<lattice::bond_t>& bonds,
         found_bonds[index] = true;
     }
 
-    for (size_t i = 0; i < found_bonds.size(); ++i) {
+    for (size_t i = 0; i < found_bonds.size(); ++i)
+    {
         ASSERT_TRUE(found_bonds[i]) << "Bond not found: {" << expected_bonds[i][0] << ", " << expected_bonds[i][1] << "}";
     }
 }
 
-TEST(TriangularLatticeTest, BasisAndUnitCell) {
-    std::string file = TEST_LATTICES_FILE_PATH;
+TEST(TriangularLatticeTest, BasisAndUnitCell)
+{
+    std::string file = LATTICES_FILE_PATH;
     std::string lattice_name = "triangular lattice";
     std::string cell_name = "simple2d";
 
     // Check if the file exists
     std::ifstream test_file(file);
     std::string comment = "File does not exist: " + file;
-    comment = comment +  "\nCurrent directory: " + std::filesystem::current_path().string();
+    comment = comment + "\nCurrent directory: " + std::filesystem::current_path().string();
     ASSERT_TRUE(test_file.good()) << comment;
     test_file.close();
-    try {
-        std::vector<size_t> size = {2, 2};  // Assuming a 2D lattice for triangular
-        lattice::boundary_t boundary = lattice::boundary_t::periodic;  // Example boundary condition
+    try
+    {
+        std::vector<size_t> size = {2, 2};                            // Assuming a 2D lattice for triangular
+        lattice::boundary_t boundary = lattice::boundary_t::periodic; // Example boundary condition
 
         // Create the graph using the function from graph.hpp
         auto [bonds, coordinates] = create_graph(file, lattice_name, cell_name, size, boundary);
 
-        for (auto& bond : bonds){
+        for (auto &bond : bonds)
+        {
             ASSERT_EQ(bond.bond_type, 0);
             ASSERT_EQ(bond.bonds.size(), 2);
         }
 
-        for (const auto& coord_vec : coordinates) {
+        for (const auto &coord_vec : coordinates)
+        {
             ASSERT_EQ(coord_vec.size(), 2);
         }
 
@@ -60,26 +68,29 @@ TEST(TriangularLatticeTest, BasisAndUnitCell) {
         std::vector<int> bond_types = {0, 0, 0, 0, 0, 0, 0, 0};
 
         check_bonds(bonds, expected_bonds, bond_types);
-
-    } catch (const std::exception& e) {
+    }
+    catch (const std::exception &e)
+    {
         FAIL() << "Exception during test: " << e.what();
     }
 }
 
-TEST(DimerHexagonalLatticeTest, BasisAndUnitCell) {
-    std::string file = TEST_LATTICES_FILE_PATH;
+TEST(DimerHexagonalLatticeTest, 2x2_period)
+{
+    std::string file = LATTICES_FILE_PATH;
     std::string lattice_name = "dimer hexagonal lattice";
     std::string cell_name = "dimer hexagonal";
 
     // Check if the file exists
     std::ifstream test_file(file);
     std::string comment = "File does not exist: " + file;
-    comment = comment +  "\nCurrent directory: " + std::filesystem::current_path().string();
+    comment = comment + "\nCurrent directory: " + std::filesystem::current_path().string();
     ASSERT_TRUE(test_file.good()) << comment;
     test_file.close();
-    try {
-        std::vector<size_t> size = {2, 2};  // Assuming a 2D lattice for dimer hexagonal
-        lattice::boundary_t boundary = lattice::boundary_t::periodic;  // Example boundary condition
+    try
+    {
+        std::vector<size_t> size = {2, 2};                            // Assuming a 2D lattice for dimer hexagonal
+        lattice::boundary_t boundary = lattice::boundary_t::periodic; // Example boundary condition
 
         // Create the graph using the function from graph.hpp
         auto [bonds, coordinates] = create_graph(file, lattice_name, cell_name, size, boundary);
@@ -90,11 +101,13 @@ TEST(DimerHexagonalLatticeTest, BasisAndUnitCell) {
         // 6 bonds in the unit cell, 4 unit cells
         ASSERT_EQ(bonds.size(), 6 * 4);
 
-        for (auto& bond : bonds){
+        for (auto &bond : bonds)
+        {
             ASSERT_EQ(bond.bonds.size(), 2);
         }
 
-        for (const auto& coord_vec : coordinates) {
+        for (const auto &coord_vec : coordinates)
+        {
             ASSERT_EQ(coord_vec.size(), 2);
         }
         // (0,0)
@@ -102,7 +115,7 @@ TEST(DimerHexagonalLatticeTest, BasisAndUnitCell) {
         ASSERT_NEAR(coordinates[0][1], 0.0, 1e-6);
 
         // (1/3, 0)
-        ASSERT_NEAR(coordinates[1][0], 1.0/3, 1e-6);
+        ASSERT_NEAR(coordinates[1][0], 1.0 / 3, 1e-6);
         ASSERT_NEAR(coordinates[1][1], 0.0, 1e-6);
 
         // (0.5, 0.5 / sqrt(3))
@@ -113,19 +126,166 @@ TEST(DimerHexagonalLatticeTest, BasisAndUnitCell) {
         ASSERT_NEAR(coordinates[3][0], 0.5 + 1.0 / 3, 1e-6);
         ASSERT_NEAR(coordinates[3][1], 0.5 / std::sqrt(3), 1e-6);
 
+        // order of the sites in the bonds is also tested
+        std::vector<std::vector<size_t>> expected_bonds = {
+            {0, 1}, {1, 2}, {2, 3}, {3, 4}, {3, 12}, {2, 9}, {4, 5}, {5, 6}, {6, 7}, {7, 0}, {7, 8}, {6, 13}, {8, 9}, {9, 10}, {10, 11}, {11, 12}, {11, 4}, {10, 1}, {12, 13}, {13, 14}, {14, 15}, {15, 8}, {15, 0}, {14, 5}};
+        std::vector<int> bond_types = {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0};
 
-        std::cout << bonds << std::endl;
+        check_bonds(bonds, expected_bonds, bond_types);
+    }
+    catch (const std::exception &e)
+    {
+        FAIL() << "Exception during test: " << e.what();
+    }
+}
+
+TEST(DimerHexagonalLatticeTest, 1x3_period)
+{
+    std::string file = LATTICES_FILE_PATH;
+    std::string lattice_name = "dimer hexagonal lattice";
+    std::string cell_name = "dimer hexagonal";
+
+    // Check if the file exists
+    std::ifstream test_file(file);
+    std::string comment = "File does not exist: " + file;
+    comment = comment + "\nCurrent directory: " + std::filesystem::current_path().string();
+    ASSERT_TRUE(test_file.good()) << comment;
+    test_file.close();
+    try
+    {
+        std::vector<size_t> size = {3, 1};                            // Assuming a 2D lattice for dimer hexagonal
+        lattice::boundary_t boundary = lattice::boundary_t::periodic; // Example boundary condition
+
+        // Create the graph using the function from graph.hpp
+        auto [bonds, coordinates] = create_graph(file, lattice_name, cell_name, size, boundary);
+
+        // 4 sites in the unit cell, 4 unit cells
+        ASSERT_EQ(coordinates.size(), 4 * 3);
+
+        // 6 bonds in the unit cell, 4 unit cells
+        ASSERT_EQ(bonds.size(), 6 * 3);
+
+        for (auto &bond : bonds)
+        {
+            ASSERT_EQ(bond.bonds.size(), 2);
+        }
+
+        for (const auto &coord_vec : coordinates)
+        {
+            ASSERT_EQ(coord_vec.size(), 2);
+        }
+        // (0,0)
+        ASSERT_NEAR(coordinates[0][0], 0.0, 1e-6);
+        ASSERT_NEAR(coordinates[0][1], 0.0, 1e-6);
+
+        // (1/3, 0)
+        ASSERT_NEAR(coordinates[1][0], 1.0 / 3, 1e-6);
+        ASSERT_NEAR(coordinates[1][1], 0.0, 1e-6);
+
+        // (0.5, 0.5 / sqrt(3))
+        ASSERT_NEAR(coordinates[2][0], 0.5, 1e-6);
+        ASSERT_NEAR(coordinates[2][1], 0.5 / std::sqrt(3), 1e-6);
+
+        // (0.5 + 1 / 3, 0.5 / sqrt(3))
+        ASSERT_NEAR(coordinates[3][0], 0.5 + 1.0 / 3, 1e-6);
+        ASSERT_NEAR(coordinates[3][1], 0.5 / std::sqrt(3), 1e-6);
 
         // order of the sites in the bonds is also tested
         std::vector<std::vector<size_t>> expected_bonds = {
-            {0, 1}, {1,2}, {2,3}, {3,4}, {3,12}, {2,9},{4,5},{5,6},{6,7},{7,0},{7,8},{6,13},
-            {8,9}, {9,10}, {10,11}, {11,12}, {11,4}, {10,1}, {12,13}, {13,14}, {14,15}, {15,8}, {15,0}, {14,5}
-        };
-        std::vector<int> bond_types = {1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0};
+            {0, 1}, {1, 2}, {2, 3}, {2, 1}, {3, 4}, {3, 4}, {4, 5}, {5, 6}, {6, 7}, {6, 5}, {7, 8}, {7, 8}, {8, 9}, {9, 10}, {10, 11}, {10, 9}, {11, 0}, {11, 0}};
 
-        check_bonds(bonds, expected_bonds, bond_types);
+        std::vector<int> bond_types = {
+            1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0};
 
-    } catch (const std::exception& e) {
+        for (size_t i = 0; i < bonds.size(); ++i)
+        {
+            const auto &bond = bonds[i];
+            const auto &expected_bond = expected_bonds[i];
+            const auto &bond_type = bond_types[i];
+            ASSERT_EQ(bond.bonds[0], expected_bond[0]) << "Bond " << i << " does not have the expected site 1";
+            ASSERT_EQ(bond.bonds[1], expected_bond[1]) << "Bond " << i << " does not have the expected site 2";
+            ASSERT_EQ(bond.bond_type, bond_type) << "Bond " << i << " does not have the expected bond type";
+        }
+
+        // check_bonds(bonds, expected_bonds, bond_types);
+    }
+    catch (const std::exception &e)
+    {
+        FAIL() << "Exception during test: " << e.what();
+    }
+}
+
+TEST(DimerHexagonalLatticeTest, 2x2_open)
+{
+    std::string file = LATTICES_FILE_PATH;
+    std::string lattice_name = "dimer hexagonal lattice";
+    std::string cell_name = "dimer hexagonal";
+
+    // Check if the file exists
+    std::ifstream test_file(file);
+    std::string comment = "File does not exist: " + file;
+    comment = comment + "\nCurrent directory: " + std::filesystem::current_path().string();
+    ASSERT_TRUE(test_file.good()) << comment;
+    test_file.close();
+    try
+    {
+        std::vector<size_t> size = {2, 2};                        // Assuming a 2D lattice for dimer hexagonal
+        lattice::boundary_t boundary = lattice::boundary_t::open; // Example boundary condition
+
+        // Create the graph using the function from graph.hpp
+        auto [bonds, coordinates] = create_graph(file, lattice_name, cell_name, size, boundary);
+
+        ASSERT_EQ(coordinates.size(), 4 * 4);
+        ASSERT_EQ(bonds.size(), 17); // Counted manually
+        for (auto &bond : bonds)
+        {
+            ASSERT_EQ(bond.bonds.size(), 2);
+        }
+        for (const auto &coord_vec : coordinates)
+        {
+            ASSERT_EQ(coord_vec.size(), 2);
+        }
+        std::vector<std::vector<size_t>> expected_bonds = {
+            {0, 1}, {1, 2}, {2, 3}, {3, 4}, {3, 12}, {2, 9}, {4, 5}, {5, 6}, {6, 7}, {7, 0}, {7, 8}, {6, 13}, {8, 9}, {9, 10}, {10, 11}, {11, 12}, {11, 4}, {10, 1}, {12, 13}, {13, 14}, {14, 15}, {15, 8}, {15, 0}, {14, 5}};
+
+        std::vector<int> bond_types = {
+            1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0};
+
+        // check_bonds(bonds, expected_bonds, bond_types);
+    }
+    catch (const std::exception &e)
+    {
+        FAIL() << "Exception during test: " << e.what();
+    }
+}
+
+
+TEST(DimerHexagonalLatticeTest, return_error)
+{
+    std::string file = LATTICES_FILE_PATH;
+    std::string lattice_name = "dimer hexagonal lattice";
+    std::string cell_name = "dimer hexagonal";
+
+    // Check if the file exists
+    std::ifstream test_file(file);
+    std::string comment = "File does not exist: " + file;
+    comment = comment + "\nCurrent directory: " + std::filesystem::current_path().string();
+    ASSERT_TRUE(test_file.good()) << comment;
+    test_file.close();
+    lattice::boundary_t boundary = lattice::boundary_t::periodic; // Example boundary condition
+    try
+    {
+        std::vector<size_t> size1 = {0, 0};                        // size 0 is not allowed
+        ASSERT_THROW(create_graph(file, lattice_name, cell_name, size1, boundary), std::invalid_argument);
+
+        std::vector<size_t> size2;                        // Empty size vector
+        ASSERT_THROW(create_graph(file, lattice_name, cell_name, size2, boundary), std::invalid_argument);
+
+        std::vector<size_t> size3 = {1, 3, 3};                        // Must be 2D
+        ASSERT_THROW(create_graph(file, lattice_name, cell_name, size3, boundary), std::invalid_argument);
+    }
+    catch (const std::exception &e)
+    {
         FAIL() << "Exception during test: " << e.what();
     }
 }

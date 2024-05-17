@@ -16,14 +16,39 @@ namespace lattice
             throw std::runtime_error("Failed to open lattice configuration file: " + file);
         }
 
+        if (size.size() == 0)
+        {
+            throw std::invalid_argument("Size vector is empty.");
+        }
+
+        for (const auto &s : size)
+        {
+            if (s == 0)
+            {
+                throw std::invalid_argument("Size vector contains a zero element.");
+            }
+        }
+
         boost::property_tree::ptree pt;
         boost::property_tree::read_xml(is, pt);
 
         lattice::basis bs;
         read_xml(pt, lattice_name, bs);
 
+        if (bs.dimension() == 0)
+        {
+            throw std::runtime_error("Failed to read lattice basis with name: " + lattice_name);
+        }
+
         lattice::unitcell cell;
         read_xml(pt, cell_name, cell);
+
+        if (cell.dimension() == 0)
+        {
+            throw std::runtime_error("Failed to read lattice unit cell with name: " + cell_name);
+        }
+
+
 
         if (size.size() != cell.dimension())
         {

@@ -31,9 +31,13 @@ add_subdirectory(./spinlattice)
 add_executable(main main.cpp)
 
 target_link_libraries(main spinlattice)
+target_include_directories(main PRIVATE ${CMAKE_CURRENT_BINARY_DIR}) # Add the binary directory to the include path
 
 include(CTest)
 enable_testing() #enable testing has to be called in the root CMakeLists.txt
 
 add_subdirectory(./tests)
 
+# Set the path to the test lattices file
+set(LATTICES_FILE "${CMAKE_CURRENT_SOURCE_DIR}/lattices.xml") # ${CMAKE_CURRENT_SOURCE_DIR should be project_dir/tests
+configure_file(LatticesPath.hpp.in LatticesPath.hpp @ONLY)
