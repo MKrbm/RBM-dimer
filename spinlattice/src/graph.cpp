@@ -8,7 +8,7 @@
 namespace lattice
 {
 
-    std::tuple<std::vector<bond>, std::vector<std::vector<double>>> create_graph(const std::string &file, const std::string &lattice_name, const std::string &cell_name, const std::vector<size_t> &size, const boundary_t &boundary)
+    std::tuple<std::vector<bond_t>, std::vector<std::vector<double>>> create_graph(const std::string &file, const std::string &lattice_name, const std::string &cell_name, const std::vector<size_t> &size, const boundary_t &boundary)
     {
         std::ifstream is(file);
         if (!is.is_open())
@@ -54,7 +54,7 @@ namespace lattice
 
         lattice::graph lat(bs, cell, extent, boundary);
 
-        std::vector<bond> bonds;
+        std::vector<bond_t> bonds;
         std::vector<std::vector<double>> coordinates;
 
         for (size_t i = 0; i < lat.num_bonds(); i++)

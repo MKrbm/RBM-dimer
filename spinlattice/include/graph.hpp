@@ -17,12 +17,12 @@ std::ostream &operator<<(std::ostream &os, const std::vector<T> &vec) {
 namespace lattice
 {
 
-    struct bond
+    struct bond_t
     {
         std::vector<std::size_t> bonds;
         int bond_type;
 
-        friend std::ostream& operator<<(std::ostream& os, const bond& b) {
+        friend std::ostream& operator<<(std::ostream& os, const bond_t& b) {
             os << "Bond Type: " << b.bond_type << " Bonds: [ ";
             for (auto& bond : b.bonds) {
                 os << bond << ", ";
@@ -32,7 +32,7 @@ namespace lattice
         }
     };
 
-    std::tuple<std::vector<bond>, std::vector<std::vector<double>>> create_graph(const std::string &file, const std::string &lattice_name, const std::string &cell_name, const std::vector<size_t> &size, const boundary_t &boundary);
+    std::tuple<std::vector<bond_t>, std::vector<std::vector<double>>> create_graph(const std::string &file, const std::string &lattice_name, const std::string &cell_name, const std::vector<size_t> &size, const boundary_t &boundary);
 
 } // namespace lattice
 
