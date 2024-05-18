@@ -23,11 +23,11 @@ int main(int argc, char* argv[]) {
         desc.add_options()
             ("help,h", "produce help message")
             ("file,f", po::value<std::string>(&file)->default_value(lattices_file), "path to the lattice file")
-            ("lattice_name, l", po::value<std::string>(&lattice_name)->required(), "name of the lattice")
-            ("cell_name, c", po::value<std::string>(&cell_name)->required(), "name of the cell")
+            ("boundary,b", po::value<std::string>(&boundary_str)->default_value("periodic"), "boundary condition (periodic or open)")
+            ("lattice_name,l", po::value<std::string>(&lattice_name)->required(), "name of the lattice")
+            ("cell_name,c", po::value<std::string>(&cell_name)->required(), "name of the cell")
             ("L1", po::value<int>()->required(), "size in the first dimension")
-            ("L2", po::value<int>()->required(), "size in the second dimension")
-            ("boundary, b", po::value<std::string>(&boundary_str)->default_value("periodic"), "boundary condition (periodic or open)");
+            ("L2", po::value<int>()->required(), "size in the second dimension");
 
         po::variables_map vm;
         po::store(po::parse_command_line(argc, argv, desc), vm);

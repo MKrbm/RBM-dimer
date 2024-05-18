@@ -1,4 +1,5 @@
 /build
 .vscode
 .cursorignore
-
+*.pyc
+/pytests/*.png
