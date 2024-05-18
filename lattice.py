@@ -1,5 +1,6 @@
 import subprocess
 from typing import List
+from pathlib import Path
 
 def get_lattice_data(lattice_name: str, cell_name: str, size: List[int], boundary: str) -> dict:
     """
@@ -15,6 +16,10 @@ def get_lattice_data(lattice_name: str, cell_name: str, size: List[int], boundar
     - dict: containing 'bonds', 'bond_types', and 'coordinates'.
     """
     executable_path = "./build/main"
+
+    if Path(executable_path).is_file() is False:
+        raise FileNotFoundError("Executable not found. You must compile the C++ code first under the build directory.")
+
     if len(size) != 2:
         raise ValueError("Size must be a list of two integers.")
     if not all(isinstance(x, int) for x in size):
