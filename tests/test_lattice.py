@@ -1,12 +1,13 @@
 import pytest
 import subprocess
 from unittest.mock import patch
-from lattice import get_lattice_data
+from spinlattice.lattice import get_lattice_data
+
 
 
 class TestGetLatticeData:
 
-    @patch("lattice.subprocess.run")
+    @patch("spinlattice.lattice.subprocess.run")
     def test_get_lattice_data_success(self, mock_run):
         # Mock the subprocess.run return value
         mock_run.return_value.stdout = (
@@ -28,7 +29,7 @@ class TestGetLatticeData:
         result = get_lattice_data("lattice_name", "cell_name", [10, 10], "periodic")
         assert result == expected_output
 
-    @patch("lattice.subprocess.run")
+    @patch("spinlattice.lattice.subprocess.run")
     def test_get_lattice_data_success(self, mock_run):
         # Mock the subprocess.run return value
         mock_run.return_value.stdout = (
@@ -153,7 +154,7 @@ class TestGetLatticeData:
         result = get_lattice_data("lattice_name", "cell_name", [10, 10], "periodic")
         assert result == expected_output
 
-    @patch("lattice.subprocess.run")
+    @patch("spinlattice.lattice.subprocess.run")
     def test_get_lattice_data_failure(self, mock_run, capfd):
         # Mock the subprocess.run to raise an exception
         mock_run.side_effect = subprocess.CalledProcessError(

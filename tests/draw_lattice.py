@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from lattice import get_lattice_data
+# from ..lattice import get_lattice_data
+from ..spinlattice.lattice import get_lattice_data
 
 def plot_lattice(lattice_data, output_file="pytests/lattice_plot.png"):
     coordinates = lattice_data["coordinates"]
