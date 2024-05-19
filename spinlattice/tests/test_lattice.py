@@ -161,8 +161,8 @@ class TestGetLatticeData:
             1, "cmd", "An error occurred"
         )
 
-        result = get_lattice_data("lattice_name", "cell_name", [10, 10], "periodic")
-        assert result is None
+        with pytest.raises(ValueError, match="An unknown error occurred"):
+            get_lattice_data("invalid_lattice_name", "cell_name", [10, 10], "periodic")
 
         # Capture the output
         captured = capfd.readouterr()
@@ -189,6 +189,11 @@ class TestGetLatticeData:
         result = get_lattice_data("dimer-hexagonal-lattice", "dimer-hexagonal", [100, 100], "periodic")
         assert result is not None
         assert len(result["bonds"]) == 100 * 100 * 6
+    
+    def test_name_with_space(self):
+        result_with_space = get_lattice_data("dimer hexagonal lattice", "dimer hexagonal", [10, 10], "periodic")
+        result_with_hyphen = get_lattice_data("dimer-hexagonal-lattice", "dimer-hexagonal", [10, 10], "periodic")
+        assert result_with_space == result_with_hyphen
 
     def test_improper_boundary_condition(self):
         with pytest.raises(ValueError, match="Boundary must be 'periodic' or 'open'."):
@@ -204,11 +209,11 @@ class TestGetLatticeData:
 
     def test_improper_lattice_name(self):
         # This test will fail because the lattice name is not valid
-        result = get_lattice_data("invalid_lattice_name", "dimer-hexagonal", [1, 1], "periodic")
-        assert result is None
+        with pytest.raises(ValueError, match="Exception: Failed to read lattice basis with name: invalid_lattice_name"):
+            get_lattice_data("invalid_lattice_name", "dimer-hexagonal", [1, 1], "periodic")
 
     def test_improper_cell_name(self):
         # This test will fail because the cell name is not valid
-        result = get_lattice_data("dimer-hexagonal-lattice", "invalid_cell_name", [1, 1], "open")
-        assert result is None
+        with pytest.raises(ValueError, match="Exception: Failed to read lattice unit cell with name: invalid_cell_name"):
+            get_lattice_data("dimer-hexagonal-lattice", "invalid_cell_name", [1, 1], "open")
 

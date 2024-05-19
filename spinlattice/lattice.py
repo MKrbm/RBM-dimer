@@ -31,6 +31,10 @@ def get_lattice_data(lattice_name: str, cell_name: str, size: List[int], boundar
         raise ValueError("Size must be a list of two integers.")
     if boundary not in ["periodic", "open"]:
         raise ValueError("Boundary must be 'periodic' or 'open'.")
+    
+    # if lattice_name or cell_name contains space, replace space with _
+    lattice_name = lattice_name.replace(" ", "-")
+    cell_name = cell_name.replace(" ", "-")
 
     args = [
         "--lattice_name", lattice_name,
@@ -82,8 +86,10 @@ def get_lattice_data(lattice_name: str, cell_name: str, size: List[int], boundar
             "coordinates": coordinates
         }
     except subprocess.CalledProcessError as e:
-        print(f"An error occurred while executing the C++ program: {e}")
-        return None
+        error_message = e.stderr.strip() if e.stderr else "An unknown error occurred"
+        print("An error occurred while executing the C++ program:")
+        # Raise ValueError with the error message
+        raise ValueError(error_message)
 
 # Example usage:
 # lattice_data = get_lattice_data("lattice_name", "cell_name", [10, 10], "periodic")
