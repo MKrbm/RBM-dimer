@@ -1,10 +1,37 @@
-import subprocess
+from dataclasses import dataclass, field
 from typing import List
+import subprocess
 from pathlib import Path
 import os
+import numpy as np
 
+@dataclass
+class LatticeData:
+    bonds: np.ndarray = field(default_factory=lambda: np.array([]))
+    bond_types: np.ndarray = field(default_factory=lambda: np.array([]))
+    coordinates: np.ndarray = field(default_factory=lambda: np.array([]))
 
-def get_lattice_data(lattice_name: str, cell_name: str, size: List[int], boundary: str) -> dict:
+    def __post_init__(self):
+        if self.bonds.ndim != 2 or self.bonds.shape[1] != 2:
+            raise ValueError("bonds must be an N x 2 array")
+        if self.coordinates.ndim != 2 or self.coordinates.shape[1] != 2:
+            raise ValueError("coordinates must be an N x 2 array")
+        if self.bond_types.ndim != 1:
+            raise ValueError("bond_types must be an N dimensional vector")
+        if self.bonds.shape[0] != self.bond_types.shape[0]:
+            raise ValueError("bonds and bond_types must have the same length")
+
+    def __eq__(self, other):
+        if not isinstance(other, LatticeData):
+            return NotImplemented
+        return (np.array_equal(self.bonds, other.bonds) and
+                np.array_equal(self.bond_types, other.bond_types) and
+                np.array_equal(self.coordinates, other.coordinates))
+
+    def n_sites(self):
+        return self.coordinates.shape[0]
+
+def get_lattice_data(lattice_name: str, cell_name: str, size: List[int], boundary: str) -> LatticeData:
     """
     Executes the C++ executable and retrieves the lattice data.
 
@@ -15,7 +42,7 @@ def get_lattice_data(lattice_name: str, cell_name: str, size: List[int], boundar
     - boundary: str, boundary condition (periodic or open).
 
     Returns:
-    - dict: containing 'bonds', 'bond_types', and 'coordinates'.
+    - LatticeData: containing 'bonds', 'bond_types', and 'coordinates'.
     """
     executable_path = Path(__file__).parent / "build" / "main"
 
@@ -71,7 +98,7 @@ def get_lattice_data(lattice_name: str, cell_name: str, size: List[int], boundar
 
             if parsing_bonds:
                 if "Bond Type:" in line:
-                    bond_type = line.split("Bond Type: ")[1].split(", Bonds:")[0]
+                    bond_type = int(line.split("Bond Type: ")[1].split(", Bonds:")[0])
                     bond_types.append(bond_type)
                     bond_list = line.split("{")[1].split("}")[0].split(", ")
                     bonds.append([int(b) for b in bond_list])
@@ -80,17 +107,13 @@ def get_lattice_data(lattice_name: str, cell_name: str, size: List[int], boundar
                     coord_list = line.split("{")[1].split("}")[0].split(", ")
                     coordinates.append([float(c) for c in coord_list])
 
-        return {
-            "bonds": bonds,
-            "bond_types": bond_types,
-            "coordinates": coordinates
-        }
+        return LatticeData(
+            bonds=np.array(bonds),
+            bond_types=np.array(bond_types),
+            coordinates=np.array(coordinates)
+        )
     except subprocess.CalledProcessError as e:
         error_message = e.stderr.strip() if e.stderr else "An unknown error occurred"
         print("An error occurred while executing the C++ program:")
         # Raise ValueError with the error message
         raise ValueError(error_message)
-
-# Example usage:
-# lattice_data = get_lattice_data("lattice_name", "cell_name", [10, 10], "periodic")
-# print(lattice_data)

@@ -1,8 +1,8 @@
+import numpy as np
 import pytest
 import subprocess
 from unittest.mock import patch
-from spinlattice.lattice import get_lattice_data
-
+from spinlattice.lattice import get_lattice_data, LatticeData
 
 
 class TestGetLatticeData:
@@ -20,11 +20,12 @@ class TestGetLatticeData:
         )
         mock_run.return_value.returncode = 0
 
-        expected_output = {
-            "bonds": [[0, 1], [2, 3]],
-            "bond_types": ["1", "2"],
-            "coordinates": [[0.0, 0.0], [1.0, 1.0]],
-        }
+        expected_output = LatticeData(
+            bonds=np.array([[0, 1], [2, 3]]),
+            bond_types=np.array([1, 2]),
+            coordinates=np.array([[0.0, 0.0], [1.0, 1.0]]),
+        )
+
 
         result = get_lattice_data("lattice_name", "cell_name", [10, 10], "periodic")
         assert result == expected_output
@@ -78,8 +79,8 @@ class TestGetLatticeData:
         )
         mock_run.return_value.returncode = 0
 
-        expected_output = {
-            "bonds": [
+        expected_output = LatticeData(
+            bonds=np.array([
                 [0, 1],
                 [1, 2],
                 [2, 3],
@@ -104,52 +105,52 @@ class TestGetLatticeData:
                 [14, 5],
                 [15, 8],
                 [15, 0],
-            ],
-            "bond_types": [
-                "1",
-                "0",
-                "0",
-                "0",
-                "0",
-                "0",
-                "1",
-                "0",
-                "0",
-                "0",
-                "0",
-                "0",
-                "1",
-                "0",
-                "0",
-                "0",
-                "0",
-                "0",
-                "1",
-                "0",
-                "0",
-                "0",
-                "0",
-                "0",
-            ],
-            "coordinates": [
-                [0.0000000000, 0.0000000000],
-                [0.3333333333, 0.0000000000],
-                [0.5000000000, 0.2886751346],
+            ]),
+            bond_types=np.array([
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+            ]),
+            coordinates=np.array([
+                [0.0, 0.0],
+                [0.3333333333, 0.0],
+                [0.5, 0.2886751346],
                 [0.8333333333, 0.2886751346],
-                [1.0000000000, 0.0000000000],
-                [1.3333333333, 0.0000000000],
-                [1.5000000000, 0.2886751346],
+                [1.0, 0.0],
+                [1.3333333333, 0.0],
+                [1.5, 0.2886751346],
                 [1.8333333333, 0.2886751346],
-                [0.0000000000, 0.5773502692],
+                [0.0, 0.5773502692],
                 [0.3333333333, 0.5773502692],
-                [0.5000000000, 0.8660254038],
+                [0.5, 0.8660254038],
                 [0.8333333333, 0.8660254038],
-                [1.0000000000, 0.5773502692],
+                [1.0, 0.5773502692],
                 [1.3333333333, 0.5773502692],
-                [1.5000000000, 0.8660254038],
+                [1.5, 0.8660254038],
                 [1.8333333333, 0.8660254038],
-            ],
-        }
+            ]),
+        )
 
         result = get_lattice_data("lattice_name", "cell_name", [10, 10], "periodic")
         assert result == expected_output
@@ -168,36 +169,49 @@ class TestGetLatticeData:
         captured = capfd.readouterr()
         assert "An error occurred while executing the C++ program" in captured.out
 
-
     def test_1x1_open(self):
-        expected_output = {
-            "bonds": [
-                [0, 1], [1, 2], [2, 3]
-            ],
-            "bond_types": [
-                "1", "0", "0"
-            ],
-            "coordinates": [
-                [0.0000000000, 0.0000000000], [0.3333333333, 0.0000000000], [0.5000000000, 0.2886751346], [0.8333333333, 0.2886751346]
-            ]
-        }
+        expected_output = LatticeData(
+            bonds=np.array([[0, 1], [1, 2], [2, 3]]),
+            bond_types=np.array([1, 0, 0]),
+            coordinates=np.array([
+                [0.0, 0.0],
+                [0.3333333333, 0.0],
+                [0.5, 0.2886751346],
+                [0.8333333333, 0.2886751346],
+            ]),
+        )
 
-        result = get_lattice_data("dimer-hexagonal-lattice", "dimer-hexagonal", [1, 1], "open")
+        result = get_lattice_data(
+            "dimer-hexagonal-lattice", "dimer-hexagonal", [1, 1], "open"
+        )
         assert result == expected_output
-    
+
     def test_100x100_periodic(self):
-        result = get_lattice_data("dimer-hexagonal-lattice", "dimer-hexagonal", [100, 100], "periodic")
+        result = get_lattice_data(
+            "dimer-hexagonal-lattice", "dimer-hexagonal", [100, 100], "periodic"
+        )
         assert result is not None
-        assert len(result["bonds"]) == 100 * 100 * 6
-    
+        assert len(result.bonds) == 100 * 100 * 6
+        assert result.bonds.ndim == 2
+        assert result.coordinates.ndim == 2
+        assert result.bond_types.ndim == 1
+        assert result.bonds.shape[0] == result.bond_types.shape[0]
+        
+
     def test_name_with_space(self):
-        result_with_space = get_lattice_data("dimer hexagonal lattice", "dimer hexagonal", [10, 10], "periodic")
-        result_with_hyphen = get_lattice_data("dimer-hexagonal-lattice", "dimer-hexagonal", [10, 10], "periodic")
+        result_with_space = get_lattice_data(
+            "dimer hexagonal lattice", "dimer hexagonal", [10, 10], "periodic"
+        )
+        result_with_hyphen = get_lattice_data(
+            "dimer-hexagonal-lattice", "dimer-hexagonal", [10, 10], "periodic"
+        )
         assert result_with_space == result_with_hyphen
 
     def test_improper_boundary_condition(self):
         with pytest.raises(ValueError, match="Boundary must be 'periodic' or 'open'."):
-            get_lattice_data("dimer-hexagonal-lattice", "dimer-hexagonal", [1, 1], "invalid_boundary")
+            get_lattice_data(
+                "dimer-hexagonal-lattice", "dimer-hexagonal", [1, 1], "invalid_boundary"
+            )
 
     def test_incorrect_size_list_length(self):
         with pytest.raises(ValueError, match="Size must be a list of two integers."):
@@ -205,15 +219,26 @@ class TestGetLatticeData:
 
     def test_size_list_contains_non_integer(self):
         with pytest.raises(ValueError, match="Size must be a list of two integers."):
-            get_lattice_data("dimer-hexagonal-lattice", "dimer-hexagonal", [1, "a"], "open")
+            get_lattice_data(
+                "dimer-hexagonal-lattice", "dimer-hexagonal", [1, "a"], "open"
+            )
 
     def test_improper_lattice_name(self):
         # This test will fail because the lattice name is not valid
-        with pytest.raises(ValueError, match="Exception: Failed to read lattice basis with name: invalid_lattice_name"):
-            get_lattice_data("invalid_lattice_name", "dimer-hexagonal", [1, 1], "periodic")
+        with pytest.raises(
+            ValueError,
+            match="Exception: Failed to read lattice basis with name: invalid_lattice_name",
+        ):
+            get_lattice_data(
+                "invalid_lattice_name", "dimer-hexagonal", [1, 1], "periodic"
+            )
 
     def test_improper_cell_name(self):
         # This test will fail because the cell name is not valid
-        with pytest.raises(ValueError, match="Exception: Failed to read lattice unit cell with name: invalid_cell_name"):
-            get_lattice_data("dimer-hexagonal-lattice", "invalid_cell_name", [1, 1], "open")
-
+        with pytest.raises(
+            ValueError,
+            match="Exception: Failed to read lattice unit cell with name: invalid_cell_name",
+        ):
+            get_lattice_data(
+                "dimer-hexagonal-lattice", "invalid_cell_name", [1, 1], "open"
+            )
