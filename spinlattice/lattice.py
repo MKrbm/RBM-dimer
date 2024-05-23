@@ -117,3 +117,14 @@ def get_lattice_data(lattice_name: str, cell_name: str, size: List[int], boundar
         print("An error occurred while executing the C++ program:")
         # Raise ValueError with the error message
         raise ValueError(error_message)
+
+
+def conn_bonds(site: int, lattice_data: LatticeData) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Returns a list of bond types connected to the given site.
+    """
+    if site > lattice_data.n_sites() or site < 0:
+        raise ValueError("Site index out of range.")
+    where = np.where(lattice_data.bonds == site)[0]
+    return lattice_data.bonds[where], lattice_data.bond_types[where]
+

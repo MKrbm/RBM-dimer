@@ -43,7 +43,7 @@ namespace lattice
         lattice::unitcell cell;
         read_xml(pt, cell_name, cell);
 
-        if (cell.dimension() == 0)
+        if (cell.num_sites() == 0)
         {
             throw std::runtime_error("Failed to read lattice unit cell with name: " + cell_name);
         }
