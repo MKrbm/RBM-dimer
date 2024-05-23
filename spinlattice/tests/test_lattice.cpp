@@ -129,7 +129,7 @@ TEST(DimerHexagonalLatticeTest, 2x2_period)
         // order of the sites in the bonds is also tested
         std::vector<std::vector<size_t>> expected_bonds = {
             {0, 1}, {1, 2}, {2, 3}, {3, 4}, {3, 12}, {2, 9}, {4, 5}, {5, 6}, {6, 7}, {7, 0}, {7, 8}, {6, 13}, {8, 9}, {9, 10}, {10, 11}, {11, 12}, {11, 4}, {10, 1}, {12, 13}, {13, 14}, {14, 15}, {15, 8}, {15, 0}, {14, 5}};
-        std::vector<int> bond_types = {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0};
+        std::vector<int> bond_types = {0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0};
 
         check_bonds(bonds, expected_bonds, bond_types);
     }
@@ -195,7 +195,7 @@ TEST(DimerHexagonalLatticeTest, 1x3_period)
             {0, 1}, {1, 2}, {2, 3}, {2, 1}, {3, 4}, {3, 4}, {4, 5}, {5, 6}, {6, 7}, {6, 5}, {7, 8}, {7, 8}, {8, 9}, {9, 10}, {10, 11}, {10, 9}, {11, 0}, {11, 0}};
 
         std::vector<int> bond_types = {
-            1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0};
+            0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0};
 
         for (size_t i = 0; i < bonds.size(); ++i)
         {

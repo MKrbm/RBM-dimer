@@ -1,12 +1,14 @@
 import matplotlib.pyplot as plt
 import numpy as np
 # from ..lattice import get_lattice_data
-from ..spinlattice.lattice import get_lattice_data
+import sys
+sys.path.append("..")
+from spinlattice.lattice import get_lattice_data
 
-def plot_lattice(lattice_data, output_file="pytests/lattice_plot.png"):
-    coordinates = lattice_data["coordinates"]
-    bonds = lattice_data["bonds"]
-    bond_types = lattice_data["bond_types"]
+def plot_lattice(lattice_data, output_file="tests/lattice_plot.png"):
+    coordinates = lattice_data.coordinates
+    bonds = lattice_data.bonds
+    bond_types = lattice_data.bond_types
 
     # Create a figure and axis
     # fig size depends on the number of nodes
@@ -21,9 +23,9 @@ def plot_lattice(lattice_data, output_file="pytests/lattice_plot.png"):
 
     # Define colors for bond types
     bond_type_colors = {
-        "0": "blue",
-        "1": "red",
-        "2": "green",
+        0: "blue",
+        1: "red",
+        2: "green",
         # Add more colors if there are more bond types
     }
 

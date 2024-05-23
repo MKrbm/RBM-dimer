@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import subprocess
 from unittest.mock import patch
-from spinlattice.lattice import get_lattice_data, LatticeData
+from spinlattice.lattice import get_lattice_data, LatticeData, conn_bonds
 
 
 class TestGetLatticeData:
@@ -172,7 +172,7 @@ class TestGetLatticeData:
     def test_1x1_open(self):
         expected_output = LatticeData(
             bonds=np.array([[0, 1], [1, 2], [2, 3]]),
-            bond_types=np.array([1, 0, 0]),
+            bond_types=np.array([0, 1, 0]),
             coordinates=np.array([
                 [0.0, 0.0],
                 [0.3333333333, 0.0],
@@ -242,3 +242,50 @@ class TestGetLatticeData:
             get_lattice_data(
                 "dimer-hexagonal-lattice", "invalid_cell_name", [1, 1], "open"
             )
+
+
+
+class TestBondsConnected:
+
+    def test_1x1_periodic(self):
+        result = get_lattice_data(
+            "dimer-hexagonal-lattice", "dimer-hexagonal", [1, 1], "periodic"
+        )
+        for i in range(result.n_sites()):
+            connected_bonds, connected_bond_types = conn_bonds(i, result)
+            assert len(connected_bonds) == 3, "Number of nearest neighbors must be 3.\tSite {} has {} connected bonds".format(i, len(connected_bonds))
+            for bond, color in zip(connected_bonds, connected_bond_types):
+                assert i in bond, "Site {} is not in bond {}".format(i, bond)
+                assert len(bond) == 2, "Bond {} is not a 2-tuple".format(bond)
+                assert bond[0] != bond[1], "Bond {} is not a proper bond".format(bond)
+                color_expect = result.bond_types[np.where((result.bonds == bond).all(axis=1))[0]]
+                assert (color == color_expect).all()
+
+    def test_100x100_periodic(self):
+        result = get_lattice_data(
+            "dimer-hexagonal-lattice", "dimer-hexagonal", [4, 5], "periodic"
+        )
+
+        for i in range(result.n_sites()):
+            connected_bonds, connected_bond_types = conn_bonds(i, result)
+            assert len(connected_bonds) == 3, "Number of nearest neighbors must be 3.\tSite {} has {} connected bonds".format(i, len(connected_bonds))
+            for bond, color in zip(connected_bonds, connected_bond_types):
+                assert i in bond, "Site {} is not in bond {}".format(i, bond)
+                assert len(bond) == 2, "Bond {} is not a 2-tuple".format(bond)
+                assert bond[0] != bond[1], "Bond {} is not a proper bond".format(bond)
+                color_expect = result.bond_types[np.where((result.bonds == bond).all(axis=1))[0]]
+                assert (color == color_expect).all()
+
+    def test_10x10_open(self):
+        result = get_lattice_data(
+            "dimer-hexagonal-lattice", "dimer-hexagonal", [4, 5], "open"
+        )
+
+        for i in range(result.n_sites()):
+            connected_bonds, connected_bond_types = conn_bonds(i, result)
+            for bond, color in zip(connected_bonds, connected_bond_types):
+                assert i in bond, "Site {} is not in bond {}".format(i, bond)
+                assert len(bond) == 2, "Bond {} is not a 2-tuple".format(bond)
+                assert bond[0] != bond[1], "Bond {} is not a proper bond".format(bond)
+                color_expect = result.bond_types[np.where((result.bonds == bond).all(axis=1))[0]]
+                assert (color == color_expect).all()
