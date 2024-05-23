@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
         }
 
         // Create the graph using the function from graph.hpp
-        auto [bonds, coordinates] = create_graph(file, lattice_name, cell_name, size, boundary);
+        auto [bonds, loops, coordinates] = create_graph(file, lattice_name, cell_name, size, boundary);
 
         // Print out bond types, bonds, and coordinates
         std::cout << "Bond Types and Bonds:\n";
@@ -68,6 +68,11 @@ int main(int argc, char* argv[]) {
             std::cout << "}\n";
         }
 
+        std::cout << "Loops:\n";
+        for (const auto& loop : loops) {
+            std::cout << loop << "\n";
+        }
+
         std::cout << "\nCoordinates:\n";
         std::cout << std::fixed << std::setprecision(10); // Set precision for floating-point output
         for (const auto& coord_vec : coordinates) {
@@ -78,6 +83,7 @@ int main(int argc, char* argv[]) {
             }
             std::cout << "}\n";
         }
+
     } catch (const std::exception& e) {
         std::cerr << "Exception: " << e.what() << std::endl;
         return 1;
