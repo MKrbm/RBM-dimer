@@ -50,6 +50,8 @@
   <EDGE type="0"><SOURCE vertex="3"/><TARGET vertex="2" offset="0 1"/></EDGE>
   <EDGE type="0"><SOURCE vertex="4"/><TARGET vertex="1" offset="1 0"/></EDGE>
   <EDGE type="0"><SOURCE vertex="4"/><TARGET vertex="1" offset="1 1"/></EDGE>
+  <LOOP type="2"><SOURCE vertex="1"/><TARGET vertex="2" offset="0 0"/><TARGET vertex="3" offset="0 0"/><TARGET vertex="2" offset="0 1"/><TARGET vertex="1" offset="0 1"/><TARGET vertex="4" offset="-1 0"/></LOOP>
+  <LOOP type="2"><SOURCE vertex="3"/><TARGET vertex="4" offset="0 0"/><TARGET vertex="1" offset="1 1"/><TARGET vertex="4" offset="0 1"/><TARGET vertex="3" offset="0 1"/><TARGET vertex="2" offset="0 1"/></LOOP>
 </UNITCELL>
 
 <UNITCELL name="dimer triangular" dimension="2">
