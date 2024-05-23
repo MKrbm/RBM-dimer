@@ -8,7 +8,7 @@
 namespace lattice
 {
 
-    std::tuple<std::vector<bond_t>, std::vector<std::vector<double>>> create_graph(const std::string &file, const std::string &lattice_name, const std::string &cell_name, const std::vector<size_t> &size, const boundary_t &boundary)
+    std::tuple<std::vector<bond_t>, std::vector<loop_t>, std::vector<std::vector<double>>> create_graph(const std::string &file, const std::string &lattice_name, const std::string &cell_name, const std::vector<size_t> &size, const boundary_t &boundary)
     {
         std::ifstream is(file);
         if (!is.is_open())
@@ -80,11 +80,17 @@ namespace lattice
         lattice::graph lat(bs, cell, extent, boundary);
 
         std::vector<bond_t> bonds;
+        std::vector<loop_t> loops;
         std::vector<std::vector<double>> coordinates;
 
         for (size_t i = 0; i < lat.num_bonds(); i++)
         {
             bonds.push_back({{lat.source(i), lat.target(i)}, lat.bond_type(i)});
+        }
+
+        for (size_t i = 0; i < lat.num_multis(); i++)
+        {
+            loops.push_back({lat.multi(i), lat.multi_type(i)});
         }
 
         for (size_t i = 0; i < lat.num_sites(); i++)
@@ -94,7 +100,7 @@ namespace lattice
             coordinates.push_back(coord_vec);
         }
 
-        return std::make_tuple(bonds, coordinates);
+        return std::make_tuple(bonds, loops, coordinates);
     }
 
 } // namespace lattice
