@@ -4,12 +4,14 @@
 #include <filesystem>
 #include "LatticesPath.hpp"
 
-class LatticeTest : public ::testing::Test {
+class LatticeTest : public ::testing::Test
+{
 protected:
     std::string file;
     std::string comment;
 
-    void SetUp() override {
+    void SetUp() override
+    {
         file = LATTICES_FILE_PATH;
         // Check if the file exists
         std::ifstream test_file(file);
@@ -247,7 +249,6 @@ TEST_F(LatticeTest, DimerHexagonalLatticeTest_2x2_open)
     }
 }
 
-
 TEST_F(LatticeTest, DimerHexagonalLatticeTest_2x2_periodic_loops)
 {
     std::string lattice_name = "dimer hexagonal lattice";
@@ -255,8 +256,8 @@ TEST_F(LatticeTest, DimerHexagonalLatticeTest_2x2_periodic_loops)
 
     try
     {
-        std::vector<size_t> size = {2, 2};                            
-        lattice::boundary_t boundary = lattice::boundary_t::periodic; 
+        std::vector<size_t> size = {2, 2};
+        lattice::boundary_t boundary = lattice::boundary_t::periodic;
 
         // Create the graph using the function from graph.hpp
         auto [bonds, loops, coordinates] = create_graph(file, lattice_name, cell_name, size, boundary);
@@ -269,8 +270,7 @@ TEST_F(LatticeTest, DimerHexagonalLatticeTest_2x2_periodic_loops)
             {8, 9, 10, 1, 0, 15},
             {10, 11, 4, 3, 2, 1},
             {12, 13, 14, 5, 4, 11},
-            {14, 15, 0, 7, 6, 5}
-        };
+            {14, 15, 0, 7, 6, 5}};
 
         ASSERT_EQ(loops.size(), expected_loops.size()) << "Number of loops is not as expected";
 
@@ -288,6 +288,44 @@ TEST_F(LatticeTest, DimerHexagonalLatticeTest_2x2_periodic_loops)
         FAIL() << "Exception during test: " << e.what();
     }
 }
+
+
+TEST_F(LatticeTest, DimerHexagonalLatticeTest_10x3_periodic_loops)
+{
+    std::string lattice_name = "dimer hexagonal lattice";
+    std::string cell_name = "dimer hexagonal";
+
+    try
+    {
+        std::vector<size_t> size = {10, 3};
+        lattice::boundary_t boundary = lattice::boundary_t::periodic;
+
+        // Create the graph using the function from graph.hpp
+        auto [bonds, loops, coordinates] = create_graph(file, lattice_name, cell_name, size, boundary);
+
+        std::vector<size_t> visited_cnt(coordinates.size(), 0);
+
+        for (auto &loop : loops)
+        {
+            for (const size_t &site : loop.loops)
+            {
+                visited_cnt[site]++;
+            }
+        }
+
+        for (auto &cnt : visited_cnt)
+        {
+            ASSERT_EQ(cnt, 3) << "Each sites should be appearence 3 times in Periodic Loop";
+        }
+
+
+    }
+    catch (const std::exception &e)
+    {
+        FAIL() << "Exception during test: " << e.what();
+    }
+}
+
 TEST_F(LatticeTest, DimerHexagonalLatticeTest_8x9_open_loops)
 {
     std::string lattice_name = "dimer hexagonal lattice";
@@ -295,8 +333,8 @@ TEST_F(LatticeTest, DimerHexagonalLatticeTest_8x9_open_loops)
 
     try
     {
-        std::vector<size_t> size = {8, 9};                            
-        lattice::boundary_t boundary = lattice::boundary_t::open; 
+        std::vector<size_t> size = {8, 9};
+        lattice::boundary_t boundary = lattice::boundary_t::open;
 
         // Create the graph using the function from graph.hpp
         auto [bonds, loops, coordinates] = create_graph(file, lattice_name, cell_name, size, boundary);

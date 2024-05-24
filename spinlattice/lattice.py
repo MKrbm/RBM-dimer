@@ -24,6 +24,16 @@ class LatticeData:
         if len(self.loops) != 0 and self.loops.ndim != 2:
             raise ValueError("loops must be a N x 6 array")
 
+        # check dtypes
+        if not np.issubdtype(self.bonds.dtype, np.integer):
+            raise ValueError("bonds must be an integer type")
+        if not np.issubdtype(self.bond_types.dtype, np.integer):
+            raise ValueError("bond_types must be an integer type")
+        if not np.issubdtype(self.coordinates.dtype, np.floating):
+            raise ValueError("coordinates must be a floating point type")
+        if not np.issubdtype(self.loops.dtype, np.integer):
+            raise ValueError("loops must be an integer type")
+
     def __eq__(self, other):
         if not isinstance(other, LatticeData):
             return NotImplemented
@@ -98,7 +108,6 @@ def get_lattice_data(lattice_name: str, cell_name: str, size: List[int], boundar
                 parsing_bonds = True
                 parsing_coordinates = False
                 parsing_loops = False
-                print(line)
                 continue
             elif "Coordinates:" in line:
                 parsing_bonds = False
@@ -109,7 +118,6 @@ def get_lattice_data(lattice_name: str, cell_name: str, size: List[int], boundar
                 parsing_bonds = False
                 parsing_coordinates = False
                 parsing_loops = True
-                print(line)
                 continue
 
             if parsing_bonds:
