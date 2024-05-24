@@ -39,8 +39,8 @@ def plot_lattices(lattices_data, node_colors, bond_type_colors_list):
 # Example usage
 unit_cells = ["dimer-triangular", "dimer-hexagonal"]
 lattices_data = [
-    get_lattice_data("dimer-hexagonal-lattice", unit_cells[0], [4, 8], "open"),
-    get_lattice_data("dimer-hexagonal-lattice", unit_cells[1], [4, 8], "open")
+    get_lattice_data("dimer-hexagonal-lattice", unit_cells[0], [2, 2], "open"),
+    get_lattice_data("dimer-hexagonal-lattice", unit_cells[1], [2, 2], "open")
 ]
 
 # Define node colors and bond type colors for each lattice
