@@ -153,9 +153,40 @@ class TestDimerHexagonalTwoByTwoPeriodic:
         phys_conf = conn[np.where(elem <= 100)[0]]
         _, elem_const = dimer.constraint().get_conn_flattened(phys_conf, np.ones(len(phys_conf)))
         assert np.all(elem_const == 0), "configurations having effective potential <= 100 should be valid dimer configuration"
+    
+    def test_rk_point(self):
+        states = self.dimer.hi.all_states()
+        nums = self.dimer.hi.states_to_numbers(states)
+        _, elems = self.dimer.constraint().get_conn_flattened(states, np.ones(len(states)))
+        dimer_confs = np.int8(elems == 0.0)
+        phi = np.float64(dimer_confs)
+        phi /= np.linalg.norm(phi)
 
-        # print(phys_conf)
-        # conn, elem = dimer.constraint().get_conn_flattened(phys_conf, np.ones(len(phys_conf)))
-        # assert np.all(elem == 0)
+        for b in range(self.dimer.n_bonds):
+            v = self.dimer._dimer_potential_local(b).to_sparse()
+            t = self.dimer._dimer_flip_local(b).to_sparse()
+            assert phi @ v @ phi == phi @ t @ phi, "rk point should be valid dimer configuration"
+
+        H = self.dimer.hamiltonian(1.0, 1.0)
+        H = H.to_sparse()
+        assert phi @ H @ phi == 0, "rk point should be valid dimer configuration"
+        # E, V = sp.linalg.eigsh(H, k = 6, which="SA")
+        # print(E)
+
+    def test_ed_effective_hamiltonian(self):
+        H_eff = self.dimer.effective_hamiltonian(1.0, 1.0, 100)
+        H_eff = H_eff.to_sparse()
+        E, V = sp.linalg.eigsh(H_eff, k = 6, which="SA")
+        
+        phys_confs_idx = np.where(np.abs(V[:, 0]) > 0.01)[0]
+        phys_confs = self.dimer.hi.numbers_to_states(phys_confs_idx)
+        _, elem_const = self.dimer.constraint().get_conn_flattened(phys_confs, np.ones(len(phys_confs)))
+        assert np.all(elem_const == 0), "invalid configurations should have small wavefunction value"
+
+        states = self.dimer.hi.all_states()
+        _, elems = self.dimer.constraint().get_conn_flattened(states, np.ones(len(states)))
+
+        dimer_index = np.where(elems == 0.0)[0]
+        assert np.array_equal(dimer_index, phys_confs_idx)
 
 

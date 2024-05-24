@@ -68,13 +68,13 @@ class DimerModel(ABC):
         return self.effective_projection(J) + self.dimer_potential(V) + self.dimer_flip(h)
 
     def dimer_potential(self, V: float) -> LocalOperator:
-        return sum([self._dimer_potential_local(b) for b in range(self.n_bonds)])
+        return sum([self._dimer_potential_local(b) for b in range(self.n_bonds)]) * V
 
     def dimer_flip(self, h: float) -> LocalOperator:
         """
         Return the system operator for the dimer-flip term
         """
-        return sum([self._dimer_flip_local(b) for b in range(self.n_bonds)])
+        return -1 * sum([self._dimer_flip_local(b) for b in range(self.n_bonds)]) * h
 
     def _dimer_flip_local(self, b: int) -> LocalOperator:
         """
@@ -152,7 +152,7 @@ class DimerHexagonal(DimerModel):
         elif (vis_cnt == 4).sum() == 1:
             cand_zigzag1 = np.concatenate([bonds[conn_b1[0]], bonds[conn_b2[1]]])
             v1 = self._dimer_exists(conn_b1[0]) * self._dimer_exists(conn_b2[1])
-            v2 = self._dimer_exists(conn_b1[1]) * self._dimer_exists(conn_b2[1])
+            v2 = self._dimer_exists(conn_b1[1]) * self._dimer_exists(conn_b2[0])
         else:
             raise RuntimeError("Algorithm failed to find a valid zigzag")
 

@@ -50,8 +50,8 @@ lattices_data = [
 # Define node colors and bond type colors for each lattice
 node_colors = ["black", "blue"]
 bond_type_colors_list = [
-    {0: "gray", 1: "red", 2: "green"},
-    # {0: "blue", 1: "magenta", 2: "yellow"}
+    {0: "blue", 1: "magenta", 2: "yellow"},
+    # {0: "gray", 1: "red", 2: "green"},
 ]
 
 output_file = "tests/multiple_lattices_plot.png"
