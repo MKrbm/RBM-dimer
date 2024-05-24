@@ -16,13 +16,36 @@ class DimerModel(ABC):
         self.hi = nk.hilbert.Spin(s=1 / 2, N=self.n_sites)
 
     @abstractmethod
-    def projection(self) -> LocalOperator:
+    def constraint(self) -> LocalOperator:
         """
         Return the localoperator that maps the spin configurations into dimer states
-        The definition of projection here is bit twisted i.e. when projection returns 0, 
+        The definition of constraint here is bit twisted i.e. when constraint returns 0, 
         the configuration is valid dimer state.
         """
         pass
+
+    @abstractmethod
+    def _dimer_potential_local(self, b: int) -> LocalOperator:
+        """
+        Return the local operator for the dimer-dimer interaction.
+
+        The definition depends on the lattice
+        """
+        pass
+
+    def effective_projection(self, J: float) -> LocalOperator:
+        """
+        Return the local operator to effectively project the system onto the dimer states
+        """
+        op =  sum([self._effective_projection_local(b, J) for b in range(self.n_bonds)])  - 4 / 6 * self.n_bonds
+        return - J * op
+    
+    def _effective_projection_local(self, b: int, J: float) -> LocalOperator:
+
+        return sigmaz(self.hi, self.bonds[b][0]) * sigmaz(self.hi, self.bonds[b][1]) * self.bond_colors[b]
+
+
+
 
     def hamiltonian(self, V: float, h: float) -> LocalOperator:
         """
@@ -31,25 +54,27 @@ class DimerModel(ABC):
         h : float
             The strength of the dimer-flip
         """
-        pass
-
-    @abstractmethod
-    def _dimer_potential_local(self, V: float) -> LocalOperator:
+        return self.dimer_potential(V) + self.dimer_flip(h)
+    
+    def effective_hamiltonian(self, V: float, h: float, J: float) -> LocalOperator:
         """
-        Return the local operator for the dimer-dimer interaction.
-
-        The definition depends on the lattice
+        V : float
+            The strength of the dimer-dimer interaction
+        h : float
+            The strength of the dimer-flip
+        J : float
+            The strength of the effective projection
         """
-        pass
+        return self.effective_projection(J) + self.dimer_potential(V) + self.dimer_flip(h)
 
     def dimer_potential(self, V: float) -> LocalOperator:
-        return sum([self._dimer_potential_local(b) for b in range(self.lattice_data.n_bonds())])
+        return sum([self._dimer_potential_local(b) for b in range(self.n_bonds)])
 
     def dimer_flip(self, h: float) -> LocalOperator:
         """
         Return the system operator for the dimer-flip term
         """
-        return sum([self._dimer_flip_local(b) for b in range(self.lattice_data.n_bonds())])
+        return sum([self._dimer_flip_local(b) for b in range(self.n_bonds)])
 
     def _dimer_flip_local(self, b: int) -> LocalOperator:
         """
@@ -67,6 +92,10 @@ class DimerModel(ABC):
         return -2 * self.lattice_data.bond_types + 1
 
     @property
+    def n_bonds(self) -> int:
+        return len(self.bonds)
+
+    @property
     def loops(self) -> np.ndarray:
         return self.lattice_data.loops
 
@@ -74,23 +103,23 @@ class DimerModel(ABC):
 class DimerHexagonal(DimerModel):
     def __init__(self, lattice_data: LatticeData):
         super().__init__(lattice_data)
-        self._set_projections()
+        self._set_constraints()
 
-    def _set_projections(self) -> None:
+    def _set_constraints(self) -> None:
         loops = self.lattice_data.loops
         bonds = self.lattice_data.bonds
         bond_colors = self.lattice_data.bond_types
 
-        self.projections: List[LocalOperator] = []
+        self.constraints: List[LocalOperator] = []
         for loop in loops:
             bi = np.where(np.isin(bonds, loop).all(axis=1))[0]  # bond indices
             assert len(bi) == 6
             _local_operator = sum([((-1) ** c) * sigmaz(self.hi, e[0]) * sigmaz(self.hi, e[1]) for e, c in zip(bonds[bi], bond_colors[bi])])
-            local_projection = (_local_operator - 4)
-            self.projections.append(local_projection)
+            local_constraint = -(_local_operator - 4)
+            self.constraints.append(local_constraint)
 
-    def projection(self) -> LocalOperator:
-        return sum(self.projections)
+    def constraint(self) -> LocalOperator:
+        return sum(self.constraints)
 
     def _dimer_potential_local(self, b: int) -> LocalOperator:
         """

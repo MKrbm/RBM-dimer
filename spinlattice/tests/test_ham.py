@@ -4,6 +4,7 @@ import subprocess
 from unittest.mock import patch
 from spinlattice.lattice import get_lattice_data, LatticeData
 from spinlattice.models.dimer import DimerHexagonal
+from scipy import sparse as sp
 
 
 class TestDimerHexagonalTwoByTwoPeriodic:
@@ -71,7 +72,7 @@ class TestDimerHexagonalTwoByTwoPeriodic:
     def test_dimer_flip(self):
         ones = np.ones(self.dimer.n_sites)
         # Test ones is valid state
-        _, elem = self.dimer.projection().get_conn(ones)
+        _, elem = self.dimer.constraint().get_conn(ones)
         assert np.array_equal(elem, np.array([0.0]))
 
         op = self.dimer._dimer_flip_local(0)
@@ -82,7 +83,7 @@ class TestDimerHexagonalTwoByTwoPeriodic:
         x_prime = conn[0]
 
         # Flipping 0th bond reult in non-physical state
-        conn, elem = self.dimer.projection().get_conn(x_prime)
+        conn, elem = self.dimer.constraint().get_conn(x_prime)
         assert not np.array_equal(conn[0], ones)
         assert not np.array_equal(elem, np.array([0.0]))
 
@@ -91,8 +92,70 @@ class TestDimerHexagonalTwoByTwoPeriodic:
         conn, elem = op.get_conn(ones)
         x_prime = conn[0]
         assert not np.array_equal(x_prime, ones)
-        conn, elem = self.dimer.projection().get_conn(x_prime)
+        conn, elem = self.dimer.constraint().get_conn(x_prime)
         assert not np.array_equal(conn[0], ones)
         assert np.array_equal(
             elem, np.array([0.0])
         ), "The dimer flip operator should result in physical state: operator should return 0"
+
+    def test_effective_projection(self):
+        op = self.dimer.effective_projection(100)
+        conn, elem = op.get_conn(np.ones(self.dimer.n_sites))
+        assert np.array_equal(elem, np.array([0.0])), "The valid dimer configuration should return 0"
+
+        op_effective = self.dimer.effective_projection(1.0)
+        eff_array = op_effective.to_sparse()
+        op_constraint = self.dimer.constraint()
+        constraint_array = op_constraint.to_sparse()
+
+        assert eff_array.shape == constraint_array.shape
+
+        result = (
+            - eff_array
+            + constraint_array / 2
+            - sp.identity(eff_array.shape[0], format="csr")
+            * (2 * len(self.dimer.loops) - 4 / 6 * self.dimer.n_bonds)
+        )
+        assert (result != 0).nnz == 0, "The result should contain only 0's"
+        assert result.getnnz() == 0, "The result should contain only 0's"
+
+    def test_effective_hamiltonian(self):
+
+        lattice = get_lattice_data(
+            "dimer-hexagonal-lattice",
+            "dimer-hexagonal",
+            [
+                4,
+                6,
+            ],
+            "periodic",
+        )
+        dimer = DimerHexagonal(lattice)
+        ones = np.ones(dimer.n_sites)
+        op = dimer.effective_hamiltonian(1.0, 1.0, 100)
+        conn, elem = op.get_conn(ones)
+        x_primes = conn[1:]
+        sections = np.ones(len(x_primes))
+        conn_prime, elem_prime = op.get_conn_flattened(x_primes, sections)
+        diffs = np.diff(sections)
+        assert np.all(diffs == 145)
+        assert len(conn_prime) == len(elem_prime)
+
+        non_phys_conf = conn_prime[np.where(elem_prime > 100)[0]]
+        # Check dimer.constraint return non_zero elements and phys_conf 
+        conn, elem = dimer.constraint().get_conn_flattened(non_phys_conf, np.ones(len(non_phys_conf)))
+        # print(elem)
+        assert np.all(elem > 0)
+
+        # Check with effective_projection
+        op = dimer.effective_projection(100)
+        conn, elem = op.get_conn_flattened(conn, np.ones(len(conn)))
+        phys_conf = conn[np.where(elem <= 100)[0]]
+        _, elem_const = dimer.constraint().get_conn_flattened(phys_conf, np.ones(len(phys_conf)))
+        assert np.all(elem_const == 0), "configurations having effective potential <= 100 should be valid dimer configuration"
+
+        # print(phys_conf)
+        # conn, elem = dimer.constraint().get_conn_flattened(phys_conf, np.ones(len(phys_conf)))
+        # assert np.all(elem == 0)
+
+
