@@ -31,7 +31,7 @@ class LatticeData:
             raise ValueError("bond_types must be an integer type")
         if not np.issubdtype(self.coordinates.dtype, np.floating):
             raise ValueError("coordinates must be a floating point type")
-        if not np.issubdtype(self.loops.dtype, np.integer):
+        if len(self.loops) > 0 and not np.issubdtype(self.loops.dtype, np.integer):
             raise ValueError("loops must be an integer type")
 
     def __eq__(self, other):
