@@ -14,15 +14,19 @@ def plot_lattices(lattices_data, node_colors, bond_type_colors_list):
         bonds = lattice_data.bonds
         bond_types = lattice_data.bond_types
 
-
         # Plot bonds
-        for bond, bond_type in zip(bonds, bond_types):
+        for i, (bond, bond_type) in enumerate(zip(bonds, bond_types)):
             start = coordinates[bond[0]]
             end = coordinates[bond[1]]
             ax.plot([start[0], end[0]], [start[1], end[1]], color=bond_type_colors.get(bond_type, "black"))
+            # Add bond label
+            mid_point = [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2]
+            ax.text(mid_point[0], mid_point[1] + 0.02, str(i), color=bond_type_colors.get(bond_type, "black"), fontsize=8, ha='center', va='bottom')
         # Plot nodes
-        for coord in coordinates:
+        for j, coord in enumerate(coordinates):
             ax.plot(coord[0], coord[1], 'o', color=node_color)
+            # Add node label
+            ax.text(coord[0], coord[1] + 0.05, str(j), color=node_color, fontsize=8, ha='center')
 
     # Set axis labels
     ax.set_xlabel('X')
@@ -39,7 +43,7 @@ def plot_lattices(lattices_data, node_colors, bond_type_colors_list):
 # Example usage
 unit_cells = ["dimer-triangular", "dimer-hexagonal"]
 lattices_data = [
-    get_lattice_data("dimer-hexagonal-lattice", unit_cells[0], [2, 2], "open"),
+    # get_lattice_data("dimer-hexagonal-lattice", unit_cells[0], [2, 2], "open"),
     get_lattice_data("dimer-hexagonal-lattice", unit_cells[1], [2, 2], "open")
 ]
 
@@ -47,7 +51,7 @@ lattices_data = [
 node_colors = ["black", "blue"]
 bond_type_colors_list = [
     {0: "gray", 1: "red", 2: "green"},
-    {0: "blue", 1: "magenta", 2: "yellow"}
+    # {0: "blue", 1: "magenta", 2: "yellow"}
 ]
 
 output_file = "tests/multiple_lattices_plot.png"
