@@ -8,6 +8,7 @@ import numpy as np
 @dataclass
 class LatticeData:
     bonds: np.ndarray = field(default_factory=lambda: np.array([]))
+    loops: np.ndarray = field(default_factory=lambda: np.array([]))
     bond_types: np.ndarray = field(default_factory=lambda: np.array([]))
     coordinates: np.ndarray = field(default_factory=lambda: np.array([]))
 
@@ -20,16 +21,20 @@ class LatticeData:
             raise ValueError("bond_types must be an N dimensional vector")
         if self.bonds.shape[0] != self.bond_types.shape[0]:
             raise ValueError("bonds and bond_types must have the same length")
+        if len(self.loops) != 0 and self.loops.ndim != 2:
+            raise ValueError("loops must be a N x 6 array")
 
     def __eq__(self, other):
         if not isinstance(other, LatticeData):
             return NotImplemented
         return (np.array_equal(self.bonds, other.bonds) and
                 np.array_equal(self.bond_types, other.bond_types) and
-                np.array_equal(self.coordinates, other.coordinates))
+                np.array_equal(self.coordinates, other.coordinates) and
+                np.array_equal(self.loops, other.loops))
 
     def n_sites(self):
         return self.coordinates.shape[0]
+    
 
 def get_lattice_data(lattice_name: str, cell_name: str, size: List[int], boundary: str) -> LatticeData:
     """
@@ -42,7 +47,7 @@ def get_lattice_data(lattice_name: str, cell_name: str, size: List[int], boundar
     - boundary: str, boundary condition (periodic or open).
 
     Returns:
-    - LatticeData: containing 'bonds', 'bond_types', and 'coordinates'.
+    - LatticeData: containing 'bonds', 'bond_types', 'coordinates', and 'loops'.
     """
     executable_path = Path(__file__).parent / "build" / "main"
 
@@ -80,20 +85,31 @@ def get_lattice_data(lattice_name: str, cell_name: str, size: List[int], boundar
         bonds = []
         coordinates = []
         bond_types = []
+        loops = []
 
-        # Process the output to extract bonds, bond types, and coordinates
+        # Process the output to extract bonds, bond types, coordinates, and loops
         lines = output.splitlines()
         parsing_bonds = False
         parsing_coordinates = False
+        parsing_loops = False
 
         for line in lines:
             if "Bond Types and Bonds:" in line:
                 parsing_bonds = True
                 parsing_coordinates = False
+                parsing_loops = False
+                print(line)
                 continue
             elif "Coordinates:" in line:
                 parsing_bonds = False
                 parsing_coordinates = True
+                parsing_loops = False
+                continue
+            elif "Loop Types and Loops:" in line:
+                parsing_bonds = False
+                parsing_coordinates = False
+                parsing_loops = True
+                print(line)
                 continue
 
             if parsing_bonds:
@@ -106,11 +122,17 @@ def get_lattice_data(lattice_name: str, cell_name: str, size: List[int], boundar
                 if "{" in line and "}" in line:
                     coord_list = line.split("{")[1].split("}")[0].split(", ")
                     coordinates.append([float(c) for c in coord_list])
-
+            elif parsing_loops:
+                if "Loop Type:" in line:
+                    loop_type = int(line.split("Loop Type: ")[1].split(", Loops:")[0])
+                    loop_list = line.split("{")[1].split("}")[0].split(", ")
+                    loops.append([int(l) for l in loop_list])
+        
         return LatticeData(
             bonds=np.array(bonds),
             bond_types=np.array(bond_types),
-            coordinates=np.array(coordinates)
+            coordinates=np.array(coordinates),
+            loops=np.array(loops)
         )
     except subprocess.CalledProcessError as e:
         error_message = e.stderr.strip() if e.stderr else "An unknown error occurred"

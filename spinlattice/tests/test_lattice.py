@@ -35,30 +35,39 @@ class TestGetLatticeData:
         # Mock the subprocess.run return value
         mock_run.return_value.stdout = (
             "Bond Types and Bonds:\n"
-            "Bond Type: 1, Bonds: {0, 1}\n"
-            "Bond Type: 0, Bonds: {1, 2}\n"
+            "Bond Type: 0, Bonds: {0, 1}\n"
+            "Bond Type: 1, Bonds: {1, 2}\n"
             "Bond Type: 0, Bonds: {2, 3}\n"
             "Bond Type: 0, Bonds: {2, 9}\n"
             "Bond Type: 0, Bonds: {3, 4}\n"
             "Bond Type: 0, Bonds: {3, 12}\n"
-            "Bond Type: 1, Bonds: {4, 5}\n"
-            "Bond Type: 0, Bonds: {5, 6}\n"
+            "Bond Type: 0, Bonds: {4, 5}\n"
+            "Bond Type: 1, Bonds: {5, 6}\n"
             "Bond Type: 0, Bonds: {6, 7}\n"
             "Bond Type: 0, Bonds: {6, 13}\n"
             "Bond Type: 0, Bonds: {7, 0}\n"
             "Bond Type: 0, Bonds: {7, 8}\n"
-            "Bond Type: 1, Bonds: {8, 9}\n"
-            "Bond Type: 0, Bonds: {9, 10}\n"
+            "Bond Type: 0, Bonds: {8, 9}\n"
+            "Bond Type: 1, Bonds: {9, 10}\n"
             "Bond Type: 0, Bonds: {10, 11}\n"
             "Bond Type: 0, Bonds: {10, 1}\n"
             "Bond Type: 0, Bonds: {11, 12}\n"
             "Bond Type: 0, Bonds: {11, 4}\n"
-            "Bond Type: 1, Bonds: {12, 13}\n"
-            "Bond Type: 0, Bonds: {13, 14}\n"
+            "Bond Type: 0, Bonds: {12, 13}\n"
+            "Bond Type: 1, Bonds: {13, 14}\n"
             "Bond Type: 0, Bonds: {14, 15}\n"
             "Bond Type: 0, Bonds: {14, 5}\n"
             "Bond Type: 0, Bonds: {15, 8}\n"
             "Bond Type: 0, Bonds: {15, 0}\n"
+            "Loop Types and Loops:\n"
+            "Loop Type: 2, Loops: {0, 1, 2, 9, 8, 7}\n"
+            "Loop Type: 2, Loops: {2, 3, 12, 11, 10, 9}\n"
+            "Loop Type: 2, Loops: {4, 5, 6, 13, 12, 3}\n"
+            "Loop Type: 2, Loops: {6, 7, 8, 15, 14, 13}\n"
+            "Loop Type: 2, Loops: {8, 9, 10, 1, 0, 15}\n"
+            "Loop Type: 2, Loops: {10, 11, 4, 3, 2, 1}\n"
+            "Loop Type: 2, Loops: {12, 13, 14, 5, 4, 11}\n"
+            "Loop Type: 2, Loops: {14, 15, 0, 7, 6, 5}\n"
             "Coordinates:\n"
             "{0.0000000000, 0.0000000000}\n"
             "{0.3333333333, 0.0000000000}\n"
@@ -107,11 +116,6 @@ class TestGetLatticeData:
                 [15, 0],
             ]),
             bond_types=np.array([
-                1,
-                0,
-                0,
-                0,
-                0,
                 0,
                 1,
                 0,
@@ -127,6 +131,11 @@ class TestGetLatticeData:
                 0,
                 1,
                 0,
+                0,
+                0,
+                0,
+                0,
+                1,
                 0,
                 0,
                 0,
@@ -150,9 +159,20 @@ class TestGetLatticeData:
                 [1.5, 0.8660254038],
                 [1.8333333333, 0.8660254038],
             ]),
+            loops=np.array([
+                [0, 1, 2, 9, 8, 7],
+                [2, 3, 12, 11, 10, 9],
+                [4, 5, 6, 13, 12, 3],
+                [6, 7, 8, 15, 14, 13],
+                [8, 9, 10, 1, 0, 15],
+                [10, 11, 4, 3, 2, 1],
+                [12, 13, 14, 5, 4, 11],
+                [14, 15, 0, 7, 6, 5],
+            ])
         )
 
         result = get_lattice_data("lattice_name", "cell_name", [10, 10], "periodic")
+        # print(result)
         assert result == expected_output
 
     @patch("spinlattice.lattice.subprocess.run")

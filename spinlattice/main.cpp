@@ -60,15 +60,10 @@ int main(int argc, char* argv[]) {
         // Print out bond types, bonds, and coordinates
         std::cout << "Bond Types and Bonds:\n";
         for (const auto& bond : bonds) {
-            std::cout << "Bond Type: " << bond.bond_type << ", Bonds: {";
-            for (size_t i = 0; i < bond.bonds.size(); ++i) {
-                std::cout << bond.bonds[i];
-                if (i < bond.bonds.size() - 1) std::cout << ", ";
-            }
-            std::cout << "}\n";
+            std::cout << bond << "\n";
         }
 
-        std::cout << "Loops:\n";
+        std::cout << "\nLoop Types and Loops:\n";
         for (const auto& loop : loops) {
             std::cout << loop << "\n";
         }
