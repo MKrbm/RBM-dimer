@@ -177,11 +177,18 @@ class TestDimerHexagonalTwoByTwoPeriodic:
         H_eff = self.dimer.effective_hamiltonian(1.0, 1.0, 100)
         H_eff = H_eff.to_sparse()
         E, V = sp.linalg.eigsh(H_eff, k = 6, which="SA")
+
+        E_min = np.min(E)
         
         phys_confs_idx = np.where(np.abs(V[:, 0]) > 0.01)[0]
+        non_phys_confs_idx = np.where(np.abs(V[:, 0]) <= 0.01)[0]
         phys_confs = self.dimer.hi.numbers_to_states(phys_confs_idx)
+        non_phys_confs = self.dimer.hi.numbers_to_states(non_phys_confs_idx)
         _, elem_const = self.dimer.constraint().get_conn_flattened(phys_confs, np.ones(len(phys_confs)))
         assert np.all(elem_const == 0), "invalid configurations should have small wavefunction value"
+
+        _, elem_non_const = self.dimer.constraint().get_conn_flattened(non_phys_confs, np.ones(len(non_phys_confs)))
+        assert np.all(elem_non_const > 0), "valid configurations should have large wavefunction value"
 
         states = self.dimer.hi.all_states()
         _, elems = self.dimer.constraint().get_conn_flattened(states, np.ones(len(states)))
