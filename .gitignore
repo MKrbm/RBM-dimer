@@ -4,3 +4,9 @@
 .cursorignore
 *.pyc
 /pytests/*.png
+**/*.DS_Store
+**/*.cache/
+.envrc
+RBM.log
+RBM.mpack
+TODO.md
