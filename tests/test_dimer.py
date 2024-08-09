@@ -103,7 +103,7 @@ class TestDimerTriangularPeriodicNetket:
         with pytest.raises(ValueError):
             self.dimer.get_edge_from_ends(0, 4)
     
-    def test_get_edges_from_plaquettes_unorder1(self):
+    def test_get_edges_from_plaquette_unorder1(self):
         edges = self.dimer.get_plaquette_edges(0)
         edges_ref = np.array([[6, 1], [22, 10]])
         
@@ -112,7 +112,7 @@ class TestDimerTriangularPeriodicNetket:
         assert np.all(edges == edges_ref)
 
         
-    def test_get_edges_from_plaquettes_unorder2(self):
+    def test_get_edges_from_plaquette_unorder2(self):
         edges = self.dimer.get_plaquette_edges(1)
         edges_ref = np.array([0,10,17,16])
         
@@ -120,8 +120,99 @@ class TestDimerTriangularPeriodicNetket:
         edges_ref = np.sort(edges_ref.reshape(-1))
         assert np.all(edges == edges_ref)
 
-    def test_get_edges_from_plaquettes_order(self):
+    def test_get_edges_from_plaquette_order(self):
         edges = self.dimer.get_plaquette_edges(1)
         edges_ref = np.array([[10, 17], [16, 0]])
-        
         assert np.all(edges == edges_ref)
+
+    def test_get_edges_from_plaquettes(self):
+        edges = self.dimer.get_plaquette_edges(np.array([1, 2]))
+        edges_ref = np.array([[10, 17], [16, 0]])
+        assert np.all(edges[0] == edges_ref)
+
+class TestDimerTriangularFlip:
+
+    
+    def test_is_valid_dimer_4_4(self):
+        dimer = DimerTrinagular(extent=[4, 4], pbc=True)
+        x = np.zeros(dimer.n_dimers)
+        x[0] = 1
+        x[43] = 1
+        x[28] = 1
+        x[25] = 1
+        x[44] = 1
+        x[29] = 1
+        x[26] = 1
+        x[3] = 1
+        assert dimer.is_valid_dimer(x, 0)
+        assert dimer.is_valid_configuration(x)
+
+    def test_is_valid_dimer_4_3(self):
+        dimer = DimerTrinagular(extent=[4, 3], pbc=True)
+        x = np.zeros(dimer.n_dimers)
+        x[6] = 1
+        x[31] = 1
+        x[28] = 1
+        x[14] = 1
+        x[10] = 1
+        x[34] = 1
+        assert dimer.is_valid_dimer(x, 0)
+        assert dimer.is_valid_configuration(x)
+
+    def test_is_flippable(self):
+        dimer = DimerTrinagular(extent=[4, 4], pbc=True)
+        x = np.zeros(dimer.n_dimers)
+        x[0] = 1
+        x[43] = 1
+        x[28] = 1
+        x[25] = 1
+        x[44] = 1
+        x[29] = 1
+        x[26] = 1
+        x[3] = 1
+        assert dimer.is_valid_configuration(x)
+        assert dimer.is_flippable(x, 4)
+        assert dimer.is_flippable(x, 15)
+        assert dimer.is_flippable(x, 38)
+        assert dimer.is_flippable(x, 6)
+        assert dimer.is_flippable(x, 39)
+        assert dimer.is_flippable(x, 37)
+        assert not dimer.is_flippable(x, 0)
+        assert not dimer.is_flippable(x, 1)
+        assert not dimer.is_flippable(x, 2)
+        assert not dimer.is_flippable(x, 3)
+        assert not dimer.is_flippable(x, 7)
+        assert not dimer.is_flippable(x, 8)
+        assert not dimer.is_flippable(x, 10)
+    
+    def test_get_flippable_edges(self):
+        dimer = DimerTrinagular(extent=[4, 3], pbc=True)
+        x = np.zeros(dimer.n_dimers)
+        x[6] = 1
+        x[31] = 1
+        x[28] = 1
+        x[14] = 1
+        x[10] = 1
+        x[34] = 1
+        assert dimer.is_valid_configuration(x)
+        assert len(dimer.get_flippable_edges(x)) == 6
+
+        open_edges = np.array([17, 7, 30, 22]) # edges without warping
+
+        assert np.all(np.isin(open_edges, dimer.get_flippable_edges(x)))
+
+        pbc_edges = np.array([4, 9]) # edges with warping
+        assert np.all(np.isin(pbc_edges, dimer.get_flippable_edges(x)))
+    
+    def test_flip_edge(self):
+        dimer = DimerTrinagular(extent=[4, 3], pbc=True)
+        x = np.zeros(dimer.n_dimers)
+        x[6] = 1
+        x[31] = 1
+        x[28] = 1
+        x[14] = 1
+        x[10] = 1
+        x[34] = 1
+        assert dimer.is_valid_configuration(x)
+        # assert dimer.flip_edge(x, 17)
+

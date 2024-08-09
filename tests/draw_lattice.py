@@ -24,6 +24,7 @@ def plot_graph(graph : Lattice, max_edge_length : float = 1.0):
     # Plotting edges with length condition and labels
     for i, edge in enumerate(edges):
         start, end = edge
+        print(f"{i}th edge: {start} - {end}")
         # Calculate the Euclidean distance between points
         distance = np.linalg.norm(positions[start] - positions[end])
         if distance <= max_edge_length:
@@ -40,6 +41,6 @@ def plot_graph(graph : Lattice, max_edge_length : float = 1.0):
     plt.axis('equal')
     plt.savefig('./tests/lattice.png')
 
-g = Triangular(extent=[3, 3])
-plot_graph(g)
+g = Triangular(extent=[4, 3], pbc = True)
+plot_graph(g, max_edge_length=1)
 
